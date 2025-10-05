@@ -53,5 +53,8 @@ int main() {
     Trees::RBTree<int> new_tree(tree);
     new_tree.Dump("dump2");
 
+    tree = new_tree;
+    tree.Dump("dump3");
+
     return 0;
 }

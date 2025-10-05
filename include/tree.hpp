@@ -97,37 +97,25 @@ private:
         root_->is_red = false;
     }
 
-    Node<KeyT>* CopySubtree(Node<KeyT>* other_node, Node<KeyT>* other_nil_node) {
-        if (other_node == other_nil_node) { // FIXME parents
+    Node<KeyT>* CopySubtree(Node<KeyT>* other_node, Node<KeyT>* parent, Node<KeyT>* other_nil_node) {
+        if (other_node == other_nil_node) {
             return nil_;
         }
 
-        Node<KeyT>* node = new Node<KeyT>(other_node->key);
-        node->is_red = other_node->is_red;
+        Node<KeyT>* node = new Node<KeyT>(other_node->key, parent, nullptr, nullptr, other_node->is_red);
         
-        node->left = CopySubtree(other_node->left, other_nil_node);
-        node->right = CopySubtree(other_node->right, other_nil_node);
+        node->left = CopySubtree(other_node->left, node, other_nil_node);
+        node->right = CopySubtree(other_node->right, node, other_nil_node);
 
         return node;
-    }
-
-    void AssignSubtree(Node<KeyT>* node, Node<KeyT>* other_node, Node<KeyT>* other_nil_node) { // TODO test
-        if (other_node == other_nil_node) {
-            return;
-        }
-
-        node->key = other_node->key;
-        node->is_red = other_node->is_red;
-
-        AssignSubtree(node->left, other_node->left, other_nil_node);
-        AssignSubtree(node->right, other_node->right, other_nil_node);
     }
 
     void DefiningGraphNodes(std::ofstream& file, Node<KeyT>* node) const {
         static size_t rank = 0;
         file << "    node_" << node
              << " [rank=" << rank
-             << ",label=\" { node: " << node
+             << ",label=\" { parent: " << node->parent
+             << " | node: " << node
              << " | key: " << node->key
              << " | { left: " << node->left
              << " | right: " << node->right
@@ -188,11 +176,16 @@ public:
         nil_ = new Node<KeyT>(0);
         nil_->is_red = false;
         nil_->left = nil_->right = nil_;
-        root_ = CopySubtree(other.root_, other.nil_);
+        root_ = CopySubtree(other.root_, nil_, other.nil_);
     }
 
     RBTree& operator=(const RBTree<KeyT>& other) {
-
+        if (this == &other) {
+            return *this;
+        }
+        this->DeleteTree(root_);
+        root_ = CopySubtree(other.root_, nil_, other.nil_);
+        return *this;
     }
 
     class Iterator {
