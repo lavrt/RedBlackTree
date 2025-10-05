@@ -48,7 +48,10 @@ int main() {
         return 1;
     }
 
-    tree.Dump("dump");
+    tree.Dump("dump1");
+
+    Trees::RBTree<int> new_tree(tree);
+    new_tree.Dump("dump2");
 
     return 0;
 }
