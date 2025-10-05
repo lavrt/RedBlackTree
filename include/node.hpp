@@ -7,9 +7,9 @@ class Node {
 public:
     KeyT key;
 
-    Node* parent;
-    std::unique_ptr<Node> left;
-    std::unique_ptr<Node> right;
+    Node<KeyT>* parent;
+    Node<KeyT>* left;
+    Node<KeyT>* right;
 
     bool is_red;
 

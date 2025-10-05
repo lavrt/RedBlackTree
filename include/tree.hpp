@@ -9,38 +9,133 @@
 template <typename KeyT>
 class RBTree {
 private:
-    std::unique_ptr<Node<KeyT>> root_ = nullptr;
+    Node<KeyT>* root_ = nullptr;
+    Node<KeyT>* nil_ = nullptr;
 
-    void FixTree() {}
+    void DeleteTree(Node<KeyT>* node) {
+        if (node != nil_) {
+            DeleteTree(node->left);
+            DeleteTree(node->right);
+            delete node;
+        }
+    }
+
+    void LeftRotate(Node<KeyT>* x) {
+        Node<KeyT>* y = x->right;
+        x->right = y->left;
+        if (x->right != nil_) {
+            x->right->parent = x;
+        }
+        y->parent = x->parent;
+        if (x->parent == nil_) {
+            root_ = y;
+        } else if (x == x->parent->left) {
+            x->parent->left = y;
+        } else {
+            x->parent->right = y;
+        }
+        y->left = x;
+        x->parent = y;
+    }
+
+    void RightRotate(Node<KeyT>* y) {
+        Node<KeyT>* x = y->left;
+        y->left = x->right;
+        if (y->left != nil_) {
+            y->left->parent = y;
+        }
+        x->parent = y->parent;
+        if (y->parent == nil_) {
+            root_ = x;
+        } else if (y == y->parent->left) {
+            y->parent->left = x;
+        } else {
+            y->parent->right = x;
+        }
+        x->right = y;
+        y->parent = x;
+    }
+
+    void InsertFixup(Node<KeyT>* z) {
+        while (z->parent->is_red) {
+            if (z->parent == z->parent->parent->left) {
+                Node<KeyT>* y = z->parent->parent->right;
+                if (y->is_red) {
+                    z->parent->is_red = false;
+                    y->is_red = false;
+                    z->parent->parent->is_red = true;
+                    z = z->parent->parent;
+                } else {
+                    if (z == z->parent->right) {
+                        z = z->parent;
+                        LeftRotate(z);
+                    }
+                    z->parent->is_red = false;
+                    z->parent->parent->is_red = true;
+                    RightRotate(z->parent->parent);
+                }
+            } else {
+                Node<KeyT>* y = z->parent->parent->left;
+                if (y->is_red) {
+                    z->parent->is_red = false;
+                    y->is_red = false;
+                    z->parent->parent->is_red = true;
+                    z = z->parent->parent;
+                } else {
+                    if (z == z->parent->left) {
+                        z = z->parent;
+                        RightRotate(z);
+                    }
+                    z->parent->is_red = false;
+                    z->parent->parent->is_red = true;
+                    LeftRotate(z->parent->parent);
+                }
+            }
+        }
+        root_->is_red = false;
+    }
 
 public:
+    RBTree() {
+        nil_ = new Node<KeyT>(0);
+        nil_->is_red = false;
+        nil_->left = nil_->right = nil_;
+        root_ = nil_;
+    }
+
+    ~RBTree() {
+        DeleteTree(root_);
+        delete nil_;
+    }
+
     bool Insert(KeyT key) {
-        Node<KeyT>* parent = nullptr;
+        Node<KeyT>* parent = nil_;
         
-        for (Node<KeyT>* current = root_.get(); current != nullptr;) {
+        for (Node<KeyT>* current = root_; current != nil_;) {
             if (current->key == key) {
                 return false;
             }
-
             parent = current;
-            current = (key < current->key) ? current->left.get() : current->right.get();
+            current = (key < current->key) ? current->left : current->right;
         }
 
-        auto new_node = std::make_unique<Node<KeyT>>(key);
+        Node<KeyT>* new_node = new Node<KeyT>(key);
         new_node->parent = parent;
+        new_node->left = nil_;
+        new_node->right = nil_;
 
-        if (parent == nullptr) {
-            new_node->is_red = false;
-            root_ = std::move(new_node);
+        if (parent == nil_) {
+            root_ = new_node;
         } else if (new_node->key < parent->key) {
-            parent->left = std::move(new_node);
+            parent->left = new_node;
         } else {
-            parent->right = std::move(new_node);
+            parent->right = new_node;
         }
 
-        if (parent->parent != nullptr) {
-            FixTree();
-        }
+        new_node->left = new_node->right = nil_;
+        new_node->is_red = true;
+
+        InsertFixup(new_node);
 
         return true;
     }
@@ -70,45 +165,45 @@ public:
         file.close();
     }
 
-    void DefiningGraphNodes(std::ofstream& file, const std::unique_ptr<Node<KeyT>>& node) const {
+    void DefiningGraphNodes(std::ofstream& file, Node<KeyT>* node) const {
         static size_t rank = 0;
-        file << "    node_" << node.get()
+        file << "    node_" << node
              << " [rank=" << rank
-             << ",label=\" { node: " << node.get()
+             << ",label=\" { node: " << node
              << " | key: " << node->key
-             << " | { left: " << node->left.get()
-             << " | right: " << node->right.get()
+             << " | { left: " << node->left
+             << " | right: " << node->right
              << " }} \", "
              << (node->is_red
                     ? "fontcolor=\"#000000\", fillcolor=\"#FF6B6B\", color = \"#C53030\"];\n"
                     : "fontcolor=\"#FFFFFF\", fillcolor=\"#2D3748\", color = \"#1A202C\"];\n");
 
-        if (node->left) {
+        if (node->left != nil_) {
             rank++;
             DefiningGraphNodes(file, node->left);
         }
-        if (node->right) {
+        if (node->right != nil_) {
             rank++;
             DefiningGraphNodes(file, node->right);
         }
         rank--;
     }
 
-    void DefiningGraphDependencies(std::ofstream& file, const std::unique_ptr<Node<KeyT>>& node) const {
+    void DefiningGraphDependencies(std::ofstream& file, Node<KeyT>* node) const {
         static int flag = 0;
-        if (node->left) {
+        if (node->left != nil_) {
             if (flag++) {
-                file << "-> node_" << node->left.get() << " ";
+                file << "-> node_" << node->left << " ";
             } else {
-                file << "    node_" << node.get() << " -> node_" << node->left.get() << " ";
+                file << "    node_" << node << " -> node_" << node->left << " ";
             }
             DefiningGraphDependencies(file, node->left);
         }
-        if (node->right) {
+        if (node->right != nil_) {
             if (flag++) {
-                file << "-> node_" << node->right.get() << " ";
+                file << "-> node_" << node->right << " ";
             } else {
-                file << "    node_" << node.get() << " -> node_" << node->right.get() << " ";
+                file << "    node_" << node << " -> node_" << node->right << " ";
             }
             DefiningGraphDependencies(file, node->right);
         }
