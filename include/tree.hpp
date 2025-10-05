@@ -1,8 +1,6 @@
 #pragma once
 
-#include <memory>
 #include <fstream>
-#include <iostream>
 
 #include "node.hpp"
 
@@ -97,7 +95,7 @@ private:
         root_->is_red = false;
     }
 
-    Node<KeyT>* CopySubtree(Node<KeyT>* other_node, Node<KeyT>* parent, Node<KeyT>* other_nil_node) {
+    Node<KeyT>* CopySubtree(Node<KeyT>* other_node, Node<KeyT>* parent, Node<KeyT>* other_nil_node) const {
         if (other_node == other_nil_node) {
             return nil_;
         }
@@ -299,7 +297,7 @@ public:
     size_t Distance(RBTree<KeyT>::Iterator first, RBTree<KeyT>::Iterator second) const {
         size_t count = 0;
 
-        for (auto it = first; it != second; ++it) {
+        for (; first != second; ++first) {
             ++count;
         }
 
