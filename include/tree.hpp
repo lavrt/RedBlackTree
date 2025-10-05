@@ -156,19 +156,19 @@ public:
         delete nil_;
     }
 
-    class iterator {
+    class Iterator {
     private:
         Node<KeyT>* current_;
         Node<KeyT>* nil_;
 
     public:
-        iterator(Node<KeyT>* node = nullptr, Node<KeyT>* nil = nullptr) : current_(node), nil_(nil) {}
+        Iterator(Node<KeyT>* node = nullptr, Node<KeyT>* nil = nullptr) : current_(node), nil_(nil) {}
 
         const KeyT& operator*() const {
             return current_->key;
         }
 
-        iterator& operator++() {
+        Iterator& operator++() {
             if (current_->right != nil_) {
                 current_ = current_->right;
                 while (current_->left != nil_) {
@@ -185,16 +185,16 @@ public:
             return *this;
         }
 
-        bool operator==(const iterator& other) const {
+        bool operator==(const Iterator& other) const {
             return current_ == other.current_;
         }
 
-        bool operator!=(const iterator& other) const {
+        bool operator!=(const Iterator& other) const {
             return !(*this == other);
         }
     };
 
-    iterator begin() const {
+    Iterator begin() const {
         if (root_ == nil_) {
             return end();
         }
@@ -204,14 +204,14 @@ public:
             current = current->left;
         }
 
-        return iterator(current, nil_);
+        return Iterator(current, nil_);
     }
 
-    iterator end() const {
-        return iterator(nil_, nil_);
+    Iterator end() const {
+        return Iterator(nil_, nil_);
     }
 
-    bool insert(KeyT key) {
+    bool Insert(KeyT key) {
         Node<KeyT>* parent = nil_;
         
         for (Node<KeyT>* current = root_; current != nil_;) {
@@ -237,7 +237,7 @@ public:
         return true;
     }
 
-    RBTree<KeyT>::iterator lower_bound(KeyT key) const {
+    RBTree<KeyT>::Iterator LowerBound(KeyT key) const {
         Node<KeyT>* candidate = nil_;
 
         for (Node<KeyT>* current = root_; current != nil_;) {
@@ -249,10 +249,10 @@ public:
             }
         }
 
-        return iterator(candidate, nil_);
+        return Iterator(candidate, nil_);
     }
 
-    RBTree<KeyT>::iterator upper_bound(KeyT key) const {
+    RBTree<KeyT>::Iterator UpperBound(KeyT key) const {
         Node<KeyT>* candidate = nil_;
 
         for (Node<KeyT>* current = root_; current != nil_;) {
@@ -264,7 +264,17 @@ public:
             }
         }
 
-        return iterator(candidate, nil_);
+        return Iterator(candidate, nil_);
+    }
+
+    size_t Distance(RBTree<KeyT>::Iterator first, RBTree<KeyT>::Iterator second) const {
+        size_t count = 0;
+
+        for (auto it = first; it != second; ++it) {
+            ++count;
+        }
+
+        return count;
     }
 
     void Dump(const std::string& file_name) const {

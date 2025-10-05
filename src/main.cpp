@@ -1,4 +1,5 @@
 #include <iostream>
+#include <set>
 
 #include "tree.hpp"
 
@@ -7,23 +8,20 @@ namespace {
     const char kQuery = 'q';
 } // namespace
 
-template <typename It>
-size_t mydistance(It first, It second) {
-    size_t count = 0;
-
-    for (It iter = first; iter != second; ++iter) {
-        ++count;
-    }
-
-    return count;
+template <typename KeyT>
+int range_query(const RBTree<KeyT>& s, KeyT fst, KeyT snd) {
+    using itt = typename RBTree<KeyT>::Iterator;
+    itt start = s.LowerBound(fst);
+    itt fin = s.UpperBound(snd);
+    return s.Distance(start, fin);
 }
 
-template <typename C, typename T>
-int range_query(const C& s, T fst, T snd) {
-    using itt = typename C::iterator;
+template <typename KeyT>
+int range_query(const std::set<KeyT>& s, KeyT fst, KeyT snd) {
+    using itt = typename std::set<KeyT>::iterator;
     itt start = s.lower_bound(fst);
     itt fin = s.upper_bound(snd);
-    return mydistance(start, fin);
+    return std::distance(start, fin);
 }
 
 int main() {
@@ -34,7 +32,7 @@ int main() {
         if (c == kKey) {
             int k = 0;
             std::cin >> k;
-            tree.insert(k);
+            tree.Insert(k);
             continue;
         }
 
@@ -42,7 +40,7 @@ int main() {
             int first = 0;
             int second = 0;
             std::cin >> first >> second;
-            std::cout << range_query<RBTree<int>, int>(tree, first, second) << "\n";
+            std::cout << range_query<int>(tree, first, second) << "\n";
             continue;
         }
 
