@@ -6,6 +6,8 @@
 
 #include "node.hpp"
 
+namespace Trees {
+
 template <typename KeyT>
 class RBTree {
 private:
@@ -302,3 +304,5 @@ public:
         file.close();
     }
 };
+
+} // namespace Trees
