@@ -95,76 +95,6 @@ private:
         root_->is_red = false;
     }
 
-public:
-    RBTree() {
-        nil_ = new Node<KeyT>(0);
-        nil_->is_red = false;
-        nil_->left = nil_->right = nil_;
-        root_ = nil_;
-    }
-
-    ~RBTree() {
-        DeleteTree(root_);
-        delete nil_;
-    }
-
-    bool Insert(KeyT key) {
-        Node<KeyT>* parent = nil_;
-        
-        for (Node<KeyT>* current = root_; current != nil_;) {
-            if (current->key == key) {
-                return false;
-            }
-            parent = current;
-            current = (key < current->key) ? current->left : current->right;
-        }
-
-        Node<KeyT>* new_node = new Node<KeyT>(key);
-        new_node->parent = parent;
-        new_node->left = nil_;
-        new_node->right = nil_;
-
-        if (parent == nil_) {
-            root_ = new_node;
-        } else if (new_node->key < parent->key) {
-            parent->left = new_node;
-        } else {
-            parent->right = new_node;
-        }
-
-        new_node->left = new_node->right = nil_;
-        new_node->is_red = true;
-
-        InsertFixup(new_node);
-
-        return true;
-    }
-
-    void Dump(const std::string& file_name) const {
-        if (root_ == nullptr) {
-            throw std::runtime_error("Empty tree dump");
-        }
-
-        std::ofstream file(file_name + ".gv");
-        if (!file) {
-            throw std::runtime_error("Cannot open file: " + file_name + ".gv");
-        }
-
-        file << "digraph\n"
-            << "{\n    "
-            << "rankdir = TB;\n    "
-            << "node [shape=record,style = filled,penwidth = 2.5];\n    "
-            << "bgcolor = \"#F8F9FA\";\n\n";
-
-        DefiningGraphNodes(file, root_);
-        file << "\n";
-        DefiningGraphDependencies(file, root_);
-
-        file << "}\n";
-
-        file.close();
-    }
-
     void DefiningGraphNodes(std::ofstream& file, Node<KeyT>* node) const {
         static size_t rank = 0;
         file << "    node_" << node
@@ -211,5 +141,154 @@ public:
             file << ";\n";
         }
         flag = 0;
+    }
+
+public:
+    RBTree() {
+        nil_ = new Node<KeyT>(0);
+        nil_->is_red = false;
+        nil_->left = nil_->right = nil_;
+        root_ = nil_;
+    }
+
+    ~RBTree() {
+        DeleteTree(root_);
+        delete nil_;
+    }
+
+    class iterator {
+    private:
+        Node<KeyT>* current_;
+        Node<KeyT>* nil_;
+
+    public:
+        iterator(Node<KeyT>* node = nullptr, Node<KeyT>* nil = nullptr) : current_(node), nil_(nil) {}
+
+        const KeyT& operator*() const {
+            return current_->key;
+        }
+
+        iterator& operator++() {
+            if (current_->right != nil_) {
+                current_ = current_->right;
+                while (current_->left != nil_) {
+                    current_ = current_->left;
+                }
+            } else {
+                Node<KeyT>* parent = current_->parent;
+                while (current_ != nil_ && parent->right == current_) {
+                    current_ = parent;
+                    parent = current_->parent;
+                }
+                current_ = parent;
+            }
+            return *this;
+        }
+
+        bool operator==(const iterator& other) const {
+            return current_ == other.current_;
+        }
+
+        bool operator!=(const iterator& other) const {
+            return !(*this == other);
+        }
+    };
+
+    iterator begin() const {
+        if (root_ == nil_) {
+            return end();
+        }
+
+        Node<KeyT>* current = root_;
+        while (current->left != nil_) {
+            current = current->left;
+        }
+
+        return iterator(current, nil_);
+    }
+
+    iterator end() const {
+        return iterator(nil_, nil_);
+    }
+
+    bool insert(KeyT key) {
+        Node<KeyT>* parent = nil_;
+        
+        for (Node<KeyT>* current = root_; current != nil_;) {
+            if (current->key == key) {
+                return false;
+            }
+            parent = current;
+            current = (key < current->key) ? current->left : current->right;
+        }
+
+        Node<KeyT>* new_node = new Node<KeyT>(key, parent, nil_, nil_, true);
+
+        if (parent == nil_) {
+            root_ = new_node;
+        } else if (new_node->key < parent->key) {
+            parent->left = new_node;
+        } else {
+            parent->right = new_node;
+        }
+
+        InsertFixup(new_node);
+
+        return true;
+    }
+
+    RBTree<KeyT>::iterator lower_bound(KeyT key) const {
+        Node<KeyT>* candidate = nil_;
+
+        for (Node<KeyT>* current = root_; current != nil_;) {
+            if (current->key >= key) {
+                candidate = current;
+                current = current->left;
+            } else {
+                current = current->right;
+            }
+        }
+
+        return iterator(candidate, nil_);
+    }
+
+    RBTree<KeyT>::iterator upper_bound(KeyT key) const {
+        Node<KeyT>* candidate = nil_;
+
+        for (Node<KeyT>* current = root_; current != nil_;) {
+            if (current->key > key) {
+                candidate = current;
+                current = current->left;
+            } else {
+                current = current->right;
+            }
+        }
+
+        return iterator(candidate, nil_);
+    }
+
+    void Dump(const std::string& file_name) const {
+        if (root_ == nullptr) {
+            throw std::runtime_error("Empty tree dump");
+        }
+
+        std::ofstream file(file_name + ".gv");
+        if (!file) {
+            throw std::runtime_error("Cannot open file: " + file_name + ".gv");
+        }
+
+        file << "digraph\n"
+            << "{\n    "
+            << "rankdir = TB;\n    "
+            << "node [shape=record,style = filled,penwidth = 2.5];\n    "
+            << "bgcolor = \"#F8F9FA\";\n\n";
+
+        DefiningGraphNodes(file, root_);
+        file << "\n";
+        DefiningGraphDependencies(file, root_);
+
+        file << "}\n";
+
+        file.close();
     }
 };
