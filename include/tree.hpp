@@ -179,12 +179,9 @@ public:
         root_ = CopySubtree(other.root_, nil_, other.nil_);
     }
 
-    RBTree& operator=(const RBTree<KeyT>& other) {
-        if (this == &other) {
-            return *this;
-        }
-        this->DeleteTree(root_);
-        root_ = CopySubtree(other.root_, nil_, other.nil_);
+    RBTree& operator=(RBTree<KeyT> other) {
+        std::swap(root_, other.root_);
+        std::swap(nil_, other.nil_);
         return *this;
     }
 
