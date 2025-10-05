@@ -13,7 +13,8 @@ int range_query(const Trees::RBTree<KeyT>& s, KeyT fst, KeyT snd) {
     using itt = typename Trees::RBTree<KeyT>::Iterator;
     itt start = s.UpperBound(fst);
     itt fin = s.LowerBound(snd);
-    return s.Distance(start, fin) + 1;
+    int dst = s.Distance(start, fin); 
+    return dst ? dst + 1 : dst;
 }
 
 template <typename KeyT>
@@ -21,7 +22,8 @@ int range_query(const std::set<KeyT>& s, KeyT fst, KeyT snd) {
     using itt = typename std::set<KeyT>::iterator;
     itt start = s.upper_bound(fst);
     itt fin = s.lower_bound(snd);
-    return std::distance(start, fin) + 1;
+    int dst = std::distance(start, fin);
+    return dst ? dst + 1 : dst;
 }
 
 int main() {

@@ -297,11 +297,11 @@ public:
     size_t Distance(RBTree<KeyT>::Iterator first, RBTree<KeyT>::Iterator second) const {
         size_t count = 0;
 
-        for (; first != second; ++first) {
+        for (auto iter = first; iter != second; ++iter) {
             ++count;
         }
 
-        return count;
+        return (first != nil_ && second == nil_) ? count - 1 : count;
     }
 
     void Dump(const std::string& file_name) const {
