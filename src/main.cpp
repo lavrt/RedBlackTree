@@ -52,5 +52,9 @@ int main() {
 
     tree.Dump("dump");
 
+    // Trees::RBTree<int> new_tree = std::move(tree);
+    // new_tree.Dump("new_tree");
+    // new_tree = std::move(new_tree);
+
     return 0;
 }

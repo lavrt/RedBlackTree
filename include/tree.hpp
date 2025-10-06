@@ -174,9 +174,21 @@ public:
         root_ = CopySubtree(other.root_, nil_, other.nil_);
     }
 
-    RBTree& operator=(RBTree<KeyT> other) {
-        std::swap(root_, other.root_);
+    RBTree& operator=(const RBTree<KeyT>& other) {
+        RBTree<KeyT> temp(other);
+        std::swap(root_, temp.root_);
+        std::swap(nil_, temp.nil_);
+        return *this;
+    }
+
+    RBTree(RBTree&& other) : nil_(nullptr), root_(nullptr) {
         std::swap(nil_, other.nil_);
+        std::swap(root_, other.root_);
+    }
+
+    RBTree& operator=(RBTree<KeyT>&& other) {
+        std::swap(nil_, other.nil_);
+        std::swap(root_, other.root_);
         return *this;
     }
 
