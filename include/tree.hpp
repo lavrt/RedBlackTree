@@ -9,8 +9,8 @@ namespace Trees {
 template <typename KeyT>
 class RBTree {
 private:
-    Node<KeyT>* root_ = nullptr;
-    Node<KeyT>* nil_ = nullptr;
+    Node<KeyT>* nil_;
+    Node<KeyT>* root_;
 
     void DeleteTree(Node<KeyT>* node) {
         if (node != nil_) {
@@ -158,11 +158,9 @@ private:
     }
 
 public:
-    RBTree() {
-        nil_ = new Node<KeyT>(0);
+    RBTree() : nil_(new Node<KeyT>(0)) {
         nil_->is_red = false;
-        nil_->left = nil_->right = nil_;
-        root_ = nil_;
+        root_ = nil_->left = nil_->right = nil_;
     }
 
     ~RBTree() {
@@ -170,8 +168,7 @@ public:
         delete nil_;
     }
 
-    RBTree(const RBTree<KeyT>& other) {
-        nil_ = new Node<KeyT>(0);
+    RBTree(const RBTree<KeyT>& other) : nil_(new Node<KeyT>(0)) {
         nil_->is_red = false;
         nil_->left = nil_->right = nil_;
         root_ = CopySubtree(other.root_, nil_, other.nil_);

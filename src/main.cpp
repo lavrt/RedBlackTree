@@ -50,13 +50,7 @@ int main() {
         return 1;
     }
 
-    tree.Dump("dump1");
-
-    Trees::RBTree<int> new_tree(tree);
-    new_tree.Dump("dump2");
-
-    tree = new_tree;
-    tree.Dump("dump3");
+    tree.Dump("dump");
 
     return 0;
 }
