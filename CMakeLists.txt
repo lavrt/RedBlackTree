@@ -20,7 +20,7 @@ target_include_directories(tree
 
 # comparator ---------------------------------
 
-add_executable(compare src/comparator.cpp)
+add_executable(compare comparator/main.cpp)
 
 target_include_directories(compare
     PUBLIC
