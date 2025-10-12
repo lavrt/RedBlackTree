@@ -9,13 +9,20 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=address")
 endif()
 
-set(SOURCES
-    src/main.cpp
-)
+# tree ---------------------------------------
 
-add_executable(tree ${SOURCES})
+add_executable(tree src/main.cpp)
 
 target_include_directories(tree
+    PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+
+# comparator ---------------------------------
+
+add_executable(compare src/comparator.cpp)
+
+target_include_directories(compare
     PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/include
 )

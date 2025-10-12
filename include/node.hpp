@@ -1,7 +1,5 @@
 #pragma once
 
-#include <memory>
-
 template <typename KeyT>
 class Node {
 public:

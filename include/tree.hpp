@@ -310,7 +310,7 @@ public:
             ++count;
         }
 
-        return (first != nil_ && second == nil_) ? count - 1 : count;
+        return count;
     }
 
     void Dump(const std::string& file_name) const {
