@@ -1,6 +1,6 @@
 #pragma once
 
 namespace Commands {
-    const char kKey = 'k';
-    const char kQuery = 'q';
+    constexpr char kKey = 'k';
+    constexpr char kQuery = 'q';
 } // namespace Commands

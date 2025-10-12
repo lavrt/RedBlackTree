@@ -26,3 +26,8 @@ target_include_directories(compare
     PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
+
+# tests --------------------------------------
+
+enable_testing()
+add_subdirectory(tests)
