@@ -9,7 +9,7 @@ This project implements a Red-Black Tree data structure in C++. A Red-Black Tree
 A Red-Black Tree is a type of self-balancing binary search tree where each node has an extra attribute, a color (red or black), to maintain balance.
 
 <div align="center">
-<img src="docs/rbt_example.jpg" style="width: 70%; height: auto;">
+<img src="docs/rbt_example.jpg" style="width: 50%; height: auto;">
 </div>
 
 The tree adheres to the following properties:
