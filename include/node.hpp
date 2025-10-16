@@ -1,5 +1,7 @@
 #pragma once
 
+namespace Nodes {
+
 template <typename KeyT>
 class Node {
 public:
@@ -16,3 +18,5 @@ public:
     Node(KeyT key, Node<KeyT>* parent, Node<KeyT>* left, Node<KeyT>* right, bool is_red)
         : key(key), parent(parent), left(left), right(right), is_red(is_red) {}
 };
+
+} // namespace Nodes

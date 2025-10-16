@@ -18,7 +18,7 @@ int main() {
             KeyT first = 0;
             KeyT second = 0;
             std::cin >> first >> second;
-            std::cout << range_query(tree, first, second) << "\n";
+            std::cout << RangeQuery::range_query(tree, first, second) << "\n";
         } else {
             std::cerr << "Unknown command: " << cmd;
             return 1;

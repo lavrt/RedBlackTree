@@ -53,7 +53,7 @@ public:
             } else if (data[i] == Commands::kQuery) {
                 KeyT first = data[++i];
                 KeyT second = data[++i];
-                answers_of_my_tree.push_back(range_query(tree, first, second));
+                answers_of_my_tree.push_back(RangeQuery::range_query(tree, first, second));
             } else {
                 throw std::runtime_error("Unknown command: " + data[i]);
             }
@@ -75,7 +75,7 @@ public:
             } else if (data[i] == Commands::kQuery) {
                 KeyT first = data[++i];
                 KeyT second = data[++i];
-                answers_of_std_tree.push_back(range_query(tree, first, second));
+                answers_of_std_tree.push_back(RangeQuery::range_query(tree, first, second));
             } else {
                 throw std::runtime_error("Unknown command: " + data[i]);
             }

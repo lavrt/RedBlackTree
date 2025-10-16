@@ -9,10 +9,10 @@ namespace Trees {
 template <typename KeyT>
 class RBTree {
 private:
-    Node<KeyT>* nil_;
-    Node<KeyT>* root_;
+    Nodes::Node<KeyT>* nil_;
+    Nodes::Node<KeyT>* root_;
 
-    void DeleteTree(Node<KeyT>* node) {
+    void DeleteTree(Nodes::Node<KeyT>* node) {
         if (node != nil_) {
             DeleteTree(node->left);
             DeleteTree(node->right);
@@ -20,8 +20,8 @@ private:
         }
     }
 
-    void LeftRotate(Node<KeyT>* x) {
-        Node<KeyT>* y = x->right;
+    void LeftRotate(Nodes::Node<KeyT>* x) {
+        Nodes::Node<KeyT>* y = x->right;
         x->right = y->left;
         if (x->right != nil_) {
             x->right->parent = x;
@@ -38,8 +38,8 @@ private:
         x->parent = y;
     }
 
-    void RightRotate(Node<KeyT>* y) {
-        Node<KeyT>* x = y->left;
+    void RightRotate(Nodes::Node<KeyT>* y) {
+        Nodes::Node<KeyT>* x = y->left;
         y->left = x->right;
         if (y->left != nil_) {
             y->left->parent = y;
@@ -56,10 +56,10 @@ private:
         y->parent = x;
     }
 
-    void InsertFixup(Node<KeyT>* z) {
+    void InsertFixup(Nodes::Node<KeyT>* z) {
         while (z->parent->is_red) {
             if (z->parent == z->parent->parent->left) {
-                Node<KeyT>* y = z->parent->parent->right;
+                Nodes::Node<KeyT>* y = z->parent->parent->right;
                 if (y->is_red) {
                     z->parent->is_red = false;
                     y->is_red = false;
@@ -75,7 +75,7 @@ private:
                     RightRotate(z->parent->parent);
                 }
             } else {
-                Node<KeyT>* y = z->parent->parent->left;
+                Nodes::Node<KeyT>* y = z->parent->parent->left;
                 if (y->is_red) {
                     z->parent->is_red = false;
                     y->is_red = false;
@@ -95,12 +95,12 @@ private:
         root_->is_red = false;
     }
 
-    Node<KeyT>* CopySubtree(Node<KeyT>* other_node, Node<KeyT>* parent, Node<KeyT>* other_nil_node) const {
+    Nodes::Node<KeyT>* CopySubtree(Nodes::Node<KeyT>* other_node, Nodes::Node<KeyT>* parent, Nodes::Node<KeyT>* other_nil_node) const {
         if (other_node == other_nil_node) {
             return nil_;
         }
 
-        Node<KeyT>* node = new Node<KeyT>(other_node->key, parent, nullptr, nullptr, other_node->is_red);
+        Nodes::Node<KeyT>* node = new Nodes::Node<KeyT>(other_node->key, parent, nullptr, nullptr, other_node->is_red);
         
         node->left = CopySubtree(other_node->left, node, other_nil_node);
         node->right = CopySubtree(other_node->right, node, other_nil_node);
@@ -108,7 +108,7 @@ private:
         return node;
     }
 
-    void DefiningGraphNodes(std::ofstream& file, Node<KeyT>* node) const {
+    void DefiningGraphNodes(std::ofstream& file, Nodes::Node<KeyT>* node) const {
         static size_t rank = 0;
         file << "    node_" << node
              << " [rank=" << rank
@@ -133,7 +133,7 @@ private:
         rank--;
     }
 
-    void DefiningGraphDependencies(std::ofstream& file, Node<KeyT>* node) const {
+    void DefiningGraphDependencies(std::ofstream& file, Nodes::Node<KeyT>* node) const {
         static int flag = 0;
         if (node->left != nil_) {
             if (flag++) {
@@ -158,7 +158,7 @@ private:
     }
 
 public:
-    RBTree() : nil_(new Node<KeyT>(0)) {
+    RBTree() : nil_(new Nodes::Node<KeyT>(0)) {
         nil_->is_red = false;
         root_ = nil_->left = nil_->right = nil_;
     }
@@ -168,7 +168,7 @@ public:
         delete nil_;
     }
 
-    RBTree(const RBTree<KeyT>& other) : nil_(new Node<KeyT>(0)) {
+    RBTree(const RBTree<KeyT>& other) : nil_(new Nodes::Node<KeyT>(0)) {
         nil_->is_red = false;
         nil_->left = nil_->right = nil_;
         root_ = CopySubtree(other.root_, nil_, other.nil_);
@@ -194,11 +194,11 @@ public:
 
     class Iterator {
     private:
-        Node<KeyT>* current_;
-        Node<KeyT>* nil_;
+        Nodes::Node<KeyT>* current_;
+        Nodes::Node<KeyT>* nil_;
 
     public:
-        Iterator(Node<KeyT>* node = nullptr, Node<KeyT>* nil = nullptr) : current_(node), nil_(nil) {}
+        Iterator(Nodes::Node<KeyT>* node = nullptr, Nodes::Node<KeyT>* nil = nullptr) : current_(node), nil_(nil) {}
 
         const KeyT& operator*() const {
             return current_->key;
@@ -211,7 +211,7 @@ public:
                     current_ = current_->left;
                 }
             } else {
-                Node<KeyT>* parent = current_->parent;
+                Nodes::Node<KeyT>* parent = current_->parent;
                 while (current_ != nil_ && parent->right == current_) {
                     current_ = parent;
                     parent = current_->parent;
@@ -235,7 +235,7 @@ public:
             return end();
         }
 
-        Node<KeyT>* current = root_;
+        Nodes::Node<KeyT>* current = root_;
         while (current->left != nil_) {
             current = current->left;
         }
@@ -248,9 +248,9 @@ public:
     }
 
     bool Insert(KeyT key) {
-        Node<KeyT>* parent = nil_;
+        Nodes::Node<KeyT>* parent = nil_;
         
-        for (Node<KeyT>* current = root_; current != nil_;) {
+        for (Nodes::Node<KeyT>* current = root_; current != nil_;) {
             if (current->key == key) {
                 return false;
             }
@@ -258,7 +258,7 @@ public:
             current = (key < current->key) ? current->left : current->right;
         }
 
-        Node<KeyT>* new_node = new Node<KeyT>(key, parent, nil_, nil_, true);
+        Nodes::Node<KeyT>* new_node = new Nodes::Node<KeyT>(key, parent, nil_, nil_, true);
 
         if (parent == nil_) {
             root_ = new_node;
@@ -274,9 +274,9 @@ public:
     }
 
     RBTree<KeyT>::Iterator LowerBound(KeyT key) const {
-        Node<KeyT>* candidate = nil_;
+        Nodes::Node<KeyT>* candidate = nil_;
 
-        for (Node<KeyT>* current = root_; current != nil_;) {
+        for (Nodes::Node<KeyT>* current = root_; current != nil_;) {
             if (current->key >= key) {
                 candidate = current;
                 current = current->left;
@@ -289,9 +289,9 @@ public:
     }
 
     RBTree<KeyT>::Iterator UpperBound(KeyT key) const {
-        Node<KeyT>* candidate = nil_;
+        Nodes::Node<KeyT>* candidate = nil_;
 
-        for (Node<KeyT>* current = root_; current != nil_;) {
+        for (Nodes::Node<KeyT>* current = root_; current != nil_;) {
             if (current->key > key) {
                 candidate = current;
                 current = current->left;
