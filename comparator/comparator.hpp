@@ -10,6 +10,8 @@
 #include "commands.hpp"
 #include "range_query.hpp"
 
+namespace Comparators {
+
 template <typename KeyT>
 class Comparator {
 public:
@@ -86,3 +88,5 @@ public:
         time_of_std_tree = duration.count();
     }
 };
+
+} // namespace Comparators

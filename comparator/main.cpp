@@ -6,7 +6,7 @@
 using KeyT = int;
 
 int main() {
-    Comparator<KeyT> c;
+    Comparators::Comparator<KeyT> c;
 
     c.ReadData(std::cin);
 
