@@ -2,10 +2,12 @@
 
 #include "tree.hpp"
 
+using KeyT = int;
+
 class RBTreeTest : public ::testing::Test {
 protected:
-    std::vector<int> CollectKeys(const Trees::RBTree<int>& tree) {
-        std::vector<int> keys;
+    std::vector<KeyT> CollectKeys(const Trees::RBTree<KeyT>& tree) {
+        std::vector<KeyT> keys;
         for (auto it = tree.begin(); it != tree.end(); ++it) {
             keys.push_back(*it);
         }
@@ -15,7 +17,7 @@ protected:
 
 TEST_F(RBTreeTest, Constructors) {
     // constructor
-    Trees::RBTree<int> tree1;
+    Trees::RBTree<KeyT> tree1;
     EXPECT_TRUE(tree1.begin() == tree1.end());
     
     // insert
@@ -24,7 +26,7 @@ TEST_F(RBTreeTest, Constructors) {
     tree1.Insert(7);
     
     // copy constructor
-    Trees::RBTree<int> tree2(tree1);
+    Trees::RBTree<KeyT> tree2(tree1);
     EXPECT_NE(tree1.begin(), tree2.begin());
     
     auto keys1 = CollectKeys(tree1);
@@ -32,20 +34,20 @@ TEST_F(RBTreeTest, Constructors) {
     EXPECT_EQ(keys1, keys2);
     
     // operator=
-    Trees::RBTree<int> tree3;
+    Trees::RBTree<KeyT> tree3;
     tree3 = tree1;
     
     auto keys3 = CollectKeys(tree3);
     EXPECT_EQ(keys1, keys3);
     
     // move constructor
-    Trees::RBTree<int> tree4(std::move(tree1));
+    Trees::RBTree<KeyT> tree4(std::move(tree1));
     auto keys4 = CollectKeys(tree4);
     EXPECT_EQ(keys2, keys4);
     EXPECT_TRUE(tree1.begin() == tree1.end());
     
     // move operator=
-    Trees::RBTree<int> tree5;
+    Trees::RBTree<KeyT> tree5;
     tree5 = std::move(tree2);
     auto keys5 = CollectKeys(tree5);
     EXPECT_EQ(keys2, keys5);
@@ -53,7 +55,7 @@ TEST_F(RBTreeTest, Constructors) {
 }
 
 TEST_F(RBTreeTest, Insert) {
-    Trees::RBTree<int> tree;
+    Trees::RBTree<KeyT> tree;
     
     EXPECT_TRUE(tree.Insert(10));
     EXPECT_TRUE(tree.Insert(5));
@@ -72,8 +74,8 @@ TEST_F(RBTreeTest, Insert) {
 }
 
 TEST_F(RBTreeTest, Iterators) {
-    Trees::RBTree<int> tree;
-    std::vector<int> expected = {1, 3, 5, 7, 9};
+    Trees::RBTree<KeyT> tree;
+    std::vector<KeyT> expected = {1, 3, 5, 7, 9};
     
     tree.Insert(5);
     tree.Insert(1);
@@ -81,21 +83,21 @@ TEST_F(RBTreeTest, Iterators) {
     tree.Insert(3);
     tree.Insert(7);
     
-    std::vector<int> actual;
+    std::vector<KeyT> actual;
     for (auto it = tree.begin(); it != tree.end(); ++it) {
         actual.push_back(*it);
     }
     
     EXPECT_EQ(actual, expected);
     
-    Trees::RBTree<int> empty_tree;
+    Trees::RBTree<KeyT> empty_tree;
     EXPECT_TRUE(empty_tree.begin() == empty_tree.end());
 }
 
 TEST_F(RBTreeTest, Bounds) {
-    Trees::RBTree<int> tree;
+    Trees::RBTree<KeyT> tree;
     
-    for (int i = 0; i < 10; i += 2) {
+    for (size_t i = 0; i < 10; i += 2) {
         tree.Insert(i);
     }
     
@@ -114,11 +116,11 @@ TEST_F(RBTreeTest, Bounds) {
 }
 
 TEST_F(RBTreeTest, Distance) {
-    Trees::RBTree<int> tree;
+    Trees::RBTree<KeyT> tree;
     
     EXPECT_EQ(tree.Distance(tree.begin(), tree.end()), 0);
     
-    for (int i = 0; i < 10; ++i) {
+    for (size_t i = 0; i < 10; ++i) {
         tree.Insert(i);
     }
     
