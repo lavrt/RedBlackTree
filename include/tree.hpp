@@ -95,12 +95,16 @@ private:
         root_->is_red = false;
     }
 
-    Nodes::Node<KeyT>* CopySubtree(Nodes::Node<KeyT>* other_node, Nodes::Node<KeyT>* parent, Nodes::Node<KeyT>* other_nil_node) const {
+    Nodes::Node<KeyT>* CopySubtree(Nodes::Node<KeyT>* other_node, Nodes::Node<KeyT>* parent,
+        Nodes::Node<KeyT>* other_nil_node) const
+    {
         if (other_node == other_nil_node) {
             return nil_;
         }
 
-        Nodes::Node<KeyT>* node = new Nodes::Node<KeyT>(other_node->key, parent, nullptr, nullptr, other_node->is_red);
+        Nodes::Node<KeyT>* node = new Nodes::Node<KeyT>(
+            other_node->key, parent, nullptr, nullptr, other_node->is_red
+        );
         
         node->left = CopySubtree(other_node->left, node, other_nil_node);
         node->right = CopySubtree(other_node->right, node, other_nil_node);
@@ -181,12 +185,12 @@ public:
         return *this;
     }
 
-    RBTree(RBTree&& other) : nil_(nullptr), root_(nullptr) {
+    RBTree(RBTree&& other) noexcept : nil_(nullptr), root_(nullptr) {
         std::swap(nil_, other.nil_);
         std::swap(root_, other.root_);
     }
 
-    RBTree& operator=(RBTree<KeyT>&& other) {
+    RBTree& operator=(RBTree<KeyT>&& other) noexcept {
         std::swap(nil_, other.nil_);
         std::swap(root_, other.root_);
         return *this;
@@ -198,7 +202,8 @@ public:
         Nodes::Node<KeyT>* nil_;
 
     public:
-        Iterator(Nodes::Node<KeyT>* node = nullptr, Nodes::Node<KeyT>* nil = nullptr) : current_(node), nil_(nil) {}
+        Iterator(Nodes::Node<KeyT>* node = nullptr, Nodes::Node<KeyT>* nil = nullptr)
+            : current_(node), nil_(nil) {}
 
         const KeyT& operator*() const {
             return current_->key;
