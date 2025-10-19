@@ -17,6 +17,12 @@ public:
     
     Node(KeyT key, Node<KeyT>* parent, Node<KeyT>* left, Node<KeyT>* right, bool is_red)
         : key(key), parent(parent), left(left), right(right), is_red(is_red) {}
+
+    ~Node() = default;
+    Node(const Node&) = delete;
+    Node& operator=(const Node&) = delete;
+    Node(Node&&) = default;
+    Node& operator=(Node&&) = default;
 };
 
 } // namespace Nodes
