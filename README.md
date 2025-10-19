@@ -41,7 +41,7 @@ The tree adheres to the following properties:
 
 - C++11 or later
 
-- A C++ compiler (e.g., g++, clang++)
+- A C++ compiler (e.g., g++, clang)
 
 - CMake
 
