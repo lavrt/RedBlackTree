@@ -209,7 +209,7 @@ public:
             return current_->key;
         }
 
-        Iterator& operator++() {
+        Iterator& operator++() { // TODO хранить дерево в векторе, чтобы удобнее оптимизировать
             if (current_->right != nil_) {
                 current_ = current_->right;
                 while (current_->left != nil_) {

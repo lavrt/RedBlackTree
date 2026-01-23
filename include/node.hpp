@@ -2,7 +2,7 @@
 
 namespace Nodes {
 
-template <typename KeyT>
+template <typename KeyT> // TODO внутрь класса
 class Node {
 public:
     KeyT key;
