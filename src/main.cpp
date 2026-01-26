@@ -25,7 +25,5 @@ int main() {
         }
     }
 
-    tree.Dump("dump");
-
     return 0;
 }
