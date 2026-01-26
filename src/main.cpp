@@ -18,12 +18,13 @@ int main() {
             KeyT first = 0;
             KeyT second = 0;
             std::cin >> first >> second;
-            std::cout << RangeQuery::range_query(tree, first, second) << "\n";
+            std::cout << RangeQuery::range_query(tree, first, second) << " ";
         } else {
             std::cerr << "Unknown command: " << cmd;
             return 1;
         }
     }
+    std::cout << "\n";
 
     return 0;
 }
