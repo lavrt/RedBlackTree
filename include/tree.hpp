@@ -8,6 +8,189 @@ namespace Trees {
 
 template <typename KeyT>
 class RBTree {
+public:
+    RBTree() : nil_(new Nodes::Node<KeyT>(0)) {
+        nil_->is_red = false;
+        nil_->size = 0;
+        root_ = nil_->parent = nil_->left = nil_->right = nil_;
+    }
+
+    ~RBTree() {
+        DeleteTree(root_);
+        delete nil_;
+    }
+
+    RBTree(const RBTree<KeyT>& other) : nil_(new Nodes::Node<KeyT>(0)) {
+        nil_->is_red = false;
+        nil_->size = 0;
+        nil_->parent = nil_->left = nil_->right = nil_;
+        root_ = CopySubtree(other.root_, nil_, other.nil_);
+    }
+
+    RBTree& operator=(const RBTree<KeyT>& other) {
+        RBTree<KeyT> temp(other);
+        std::swap(root_, temp.root_);
+        std::swap(nil_, temp.nil_);
+        return *this;
+    }
+
+    RBTree(RBTree&& other) noexcept : nil_(nullptr), root_(nullptr) {
+        std::swap(nil_, other.nil_);
+        std::swap(root_, other.root_);
+    }
+
+    RBTree& operator=(RBTree<KeyT>&& other) noexcept {
+        std::swap(nil_, other.nil_);
+        std::swap(root_, other.root_);
+        return *this;
+    }
+
+    class Iterator {
+    private:
+        Nodes::Node<KeyT>* current_;
+        Nodes::Node<KeyT>* nil_;
+
+    public:
+        Iterator(Nodes::Node<KeyT>* node = nullptr, Nodes::Node<KeyT>* nil = nullptr)
+            : current_(node), nil_(nil) {}
+
+        const KeyT& operator*() const {
+            return current_->key;
+        }
+
+        Iterator& operator++() { // TODO хранить дерево в векторе, чтобы удобнее оптимизировать
+            if (current_->right != nil_) {
+                current_ = current_->right;
+                while (current_->left != nil_) {
+                    current_ = current_->left;
+                }
+            } else {
+                Nodes::Node<KeyT>* parent = current_->parent;
+                while (current_ != nil_ && parent->right == current_) {
+                    current_ = parent;
+                    parent = current_->parent;
+                }
+                current_ = parent;
+            }
+            return *this;
+        }
+
+        bool operator==(const Iterator& other) const {
+            return current_ == other.current_;
+        }
+
+        bool operator!=(const Iterator& other) const {
+            return !(*this == other);
+        }
+    }; // class Iterator
+
+    Iterator begin() const {
+        if (root_ == nil_) {
+            return end();
+        }
+
+        Nodes::Node<KeyT>* current = root_;
+        while (current->left != nil_) {
+            current = current->left;
+        }
+
+        return Iterator(current, nil_);
+    }
+
+    Iterator end() const {
+        return Iterator(nil_, nil_);
+    }
+
+    bool Insert(KeyT key) {
+        Nodes::Node<KeyT>* parent = nil_;
+        
+        for (Nodes::Node<KeyT>* current = root_; current != nil_;) {
+            if (current->key == key) {
+                return false;
+            }
+            parent = current;
+            current = (key < current->key) ? current->left : current->right;
+        }
+        
+        Nodes::Node<KeyT>* new_node = new Nodes::Node<KeyT>(key, parent, nil_, nil_, true); 
+
+        if (parent == nil_) {
+            root_ = new_node;
+        } else if (new_node->key < parent->key) {
+            parent->left = new_node;
+        } else {
+            parent->right = new_node;
+        }
+
+        for (Nodes::Node<KeyT>* current = parent; current != nil_;) {
+            current->size++;
+            current = current->parent;
+        }
+
+        InsertFixup(new_node);
+
+        return true;
+    }
+
+    RBTree<KeyT>::Iterator LowerBound(KeyT key) const {
+        Nodes::Node<KeyT>* candidate = nil_;
+
+        for (Nodes::Node<KeyT>* current = root_; current != nil_;) {
+            if (current->key >= key) {
+                candidate = current;
+                current = current->left;
+            } else {
+                current = current->right;
+            }
+        }
+
+        return Iterator(candidate, nil_);
+    }
+
+    RBTree<KeyT>::Iterator UpperBound(KeyT key) const {
+        Nodes::Node<KeyT>* candidate = nil_;
+
+        for (Nodes::Node<KeyT>* current = root_; current != nil_;) {
+            if (current->key > key) {
+                candidate = current;
+                current = current->left;
+            } else {
+                current = current->right;
+            }
+        }
+
+        return Iterator(candidate, nil_);
+    }
+
+    size_t Distance(RBTree<KeyT>::Iterator first, RBTree<KeyT>::Iterator second) const {
+        return RankIter(second) - RankIter(first);
+    }
+
+    void Dump(const std::string& file_name) const {
+        if (root_ == nullptr) {
+            throw std::runtime_error("Empty tree dump");
+        }
+
+        std::ofstream file(file_name + ".gv");
+        if (!file) {
+            throw std::runtime_error("Cannot open file: " + file_name + ".gv");
+        }
+
+        file << "digraph\n"
+            << "{\n    "
+            << "rankdir = TB;\n    "
+            << "node [shape=record,style = filled,penwidth = 2.5];\n    "
+            << "bgcolor = \"#F8F9FA\";\n\n";
+
+        DefiningGraphNodes(file, root_);
+        file << "\n";
+        DefiningGraphDependencies(file, root_);
+
+        file << "}\n";
+
+        file.close();
+    }
+
 private:
     Nodes::Node<KeyT>* nil_;
     Nodes::Node<KeyT>* root_;
@@ -99,6 +282,25 @@ private:
         root_->is_red = false;
     }
 
+    size_t RankLess(KeyT target) const {
+        size_t r = 0;
+
+        for (Nodes::Node<KeyT>* current = root_; current != nil_;) {
+            if (target <= current->key) {
+                current = current->left;
+            } else {
+                r += current->left->size + 1;
+                current = current->right;
+            }
+        }
+
+        return r;
+    }
+
+    size_t RankIter(const RBTree<KeyT>::Iterator& it) const {
+        return (it == end()) ? root_->size : RankLess(*it);
+    }
+
     Nodes::Node<KeyT>* CopySubtree(Nodes::Node<KeyT>* other_node, Nodes::Node<KeyT>* parent,
         Nodes::Node<KeyT>* other_nil_node) const
     {
@@ -125,6 +327,7 @@ private:
              << " | node: " << node
              << " | key: " << node->key
              << "; size: " << node->size
+             << "; rank: " << RankLess(node->key)
              << " | { left: " << node->left
              << " | right: " << node->right
              << " }} \", "
@@ -165,195 +368,6 @@ private:
             file << ";\n";
         }
         flag = 0;
-    }
-
-public:
-    RBTree() : nil_(new Nodes::Node<KeyT>(0)) {
-        nil_->is_red = false;
-        nil_->size = 0;
-        root_ = nil_->parent = nil_->left = nil_->right = nil_;
-    }
-
-    ~RBTree() {
-        DeleteTree(root_);
-        delete nil_;
-    }
-
-    RBTree(const RBTree<KeyT>& other) : nil_(new Nodes::Node<KeyT>(0)) {
-        nil_->is_red = false;
-        nil_->size = 0;
-        nil_->parent = nil_->left = nil_->right = nil_;
-        root_ = CopySubtree(other.root_, nil_, other.nil_);
-    }
-
-    RBTree& operator=(const RBTree<KeyT>& other) {
-        RBTree<KeyT> temp(other);
-        std::swap(root_, temp.root_);
-        std::swap(nil_, temp.nil_);
-        return *this;
-    }
-
-    RBTree(RBTree&& other) noexcept : nil_(nullptr), root_(nullptr) {
-        std::swap(nil_, other.nil_);
-        std::swap(root_, other.root_);
-    }
-
-    RBTree& operator=(RBTree<KeyT>&& other) noexcept {
-        std::swap(nil_, other.nil_);
-        std::swap(root_, other.root_);
-        return *this;
-    }
-
-    class Iterator {
-    private:
-        Nodes::Node<KeyT>* current_;
-        Nodes::Node<KeyT>* nil_;
-
-    public:
-        Iterator(Nodes::Node<KeyT>* node = nullptr, Nodes::Node<KeyT>* nil = nullptr)
-            : current_(node), nil_(nil) {}
-
-        const KeyT& operator*() const {
-            return current_->key;
-        }
-
-        Iterator& operator++() { // TODO хранить дерево в векторе, чтобы удобнее оптимизировать
-            if (current_->right != nil_) {
-                current_ = current_->right;
-                while (current_->left != nil_) {
-                    current_ = current_->left;
-                }
-            } else {
-                Nodes::Node<KeyT>* parent = current_->parent;
-                while (current_ != nil_ && parent->right == current_) {
-                    current_ = parent;
-                    parent = current_->parent;
-                }
-                current_ = parent;
-            }
-            return *this;
-        }
-
-        bool operator==(const Iterator& other) const {
-            return current_ == other.current_;
-        }
-
-        bool operator!=(const Iterator& other) const {
-            return !(*this == other);
-        }
-    };
-
-    Iterator begin() const {
-        if (root_ == nil_) {
-            return end();
-        }
-
-        Nodes::Node<KeyT>* current = root_;
-        while (current->left != nil_) {
-            current = current->left;
-        }
-
-        return Iterator(current, nil_);
-    }
-
-    Iterator end() const {
-        return Iterator(nil_, nil_);
-    }
-
-    bool Insert(KeyT key) {
-        Nodes::Node<KeyT>* parent = nil_;
-        
-        for (Nodes::Node<KeyT>* current = root_; current != nil_;) {
-            if (current->key == key) {
-                return false;
-            }
-            parent = current;
-            current = (key < current->key) ? current->left : current->right;
-        }
-        
-        Nodes::Node<KeyT>* new_node = new Nodes::Node<KeyT>(key, parent, nil_, nil_, true); 
-
-        if (parent == nil_) {
-            root_ = new_node;
-        } else if (new_node->key < parent->key) {
-            parent->left = new_node;
-        } else {
-            parent->right = new_node;
-        }
-
-        for (Nodes::Node<KeyT>* current = parent; current != nil_;) {
-            current->size++;
-            current = current->parent;
-        }
-
-        InsertFixup(new_node);
-
-        return true;
-    }
-
-    RBTree<KeyT>::Iterator LowerBound(KeyT key) const {
-        Nodes::Node<KeyT>* candidate = nil_;
-
-        for (Nodes::Node<KeyT>* current = root_; current != nil_;) {
-            if (current->key >= key) {
-                candidate = current;
-                current = current->left;
-            } else {
-                current = current->right;
-            }
-        }
-
-        return Iterator(candidate, nil_);
-    }
-
-    RBTree<KeyT>::Iterator UpperBound(KeyT key) const {
-        Nodes::Node<KeyT>* candidate = nil_;
-
-        for (Nodes::Node<KeyT>* current = root_; current != nil_;) {
-            if (current->key > key) {
-                candidate = current;
-                current = current->left;
-            } else {
-                current = current->right;
-            }
-        }
-
-        return Iterator(candidate, nil_);
-    }
-
-    size_t Distance(RBTree<KeyT>::Iterator first, RBTree<KeyT>::Iterator second) const {
-        size_t count = 0;
-
-        for (auto iter = first; iter != second; ++iter) {
-            ++count;
-        }
-
-        return count;
-    }
-
-    void Dump(const std::string& file_name) const {
-        if (root_ == nullptr) {
-            throw std::runtime_error("Empty tree dump");
-        }
-
-        std::ofstream file(file_name + ".gv");
-        if (!file) {
-            throw std::runtime_error("Cannot open file: " + file_name + ".gv");
-        }
-
-        file << "digraph\n"
-            << "{\n    "
-            << "rankdir = TB;\n    "
-            << "node [shape=record,style = filled,penwidth = 2.5];\n    "
-            << "bgcolor = \"#F8F9FA\";\n\n";
-
-        DefiningGraphNodes(file, root_);
-        file << "\n";
-        DefiningGraphDependencies(file, root_);
-
-        file << "}\n";
-
-        file.close();
     }
 };
 
