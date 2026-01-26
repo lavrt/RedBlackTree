@@ -36,6 +36,8 @@ private:
         }
         y->left = x;
         x->parent = y;
+        y->size = x->size;
+        x->size = x->left->size + x->right->size + 1;
     }
 
     void RightRotate(Nodes::Node<KeyT>* y) {
@@ -54,6 +56,8 @@ private:
         }
         x->right = y;
         y->parent = x;
+        x->size = y->size;
+        y->size = y->left->size + y->right->size + 1;
     }
 
     void InsertFixup(Nodes::Node<KeyT>* z) {
@@ -102,9 +106,10 @@ private:
             return nil_;
         }
 
-        Nodes::Node<KeyT>* node = new Nodes::Node<KeyT>(
-            other_node->key, parent, nullptr, nullptr, other_node->is_red
-        );
+        Nodes::Node<KeyT>* node = new Nodes::Node<KeyT>(other_node->key);
+        node->parent = parent;
+        node->is_red = other_node->is_red;
+        node->size = other_node->size;
         
         node->left = CopySubtree(other_node->left, node, other_nil_node);
         node->right = CopySubtree(other_node->right, node, other_nil_node);
@@ -119,6 +124,7 @@ private:
              << ",label=\" { parent: " << node->parent
              << " | node: " << node
              << " | key: " << node->key
+             << "; size: " << node->size
              << " | { left: " << node->left
              << " | right: " << node->right
              << " }} \", "
@@ -164,7 +170,8 @@ private:
 public:
     RBTree() : nil_(new Nodes::Node<KeyT>(0)) {
         nil_->is_red = false;
-        root_ = nil_->left = nil_->right = nil_;
+        nil_->size = 0;
+        root_ = nil_->parent = nil_->left = nil_->right = nil_;
     }
 
     ~RBTree() {
@@ -174,7 +181,8 @@ public:
 
     RBTree(const RBTree<KeyT>& other) : nil_(new Nodes::Node<KeyT>(0)) {
         nil_->is_red = false;
-        nil_->left = nil_->right = nil_;
+        nil_->size = 0;
+        nil_->parent = nil_->left = nil_->right = nil_;
         root_ = CopySubtree(other.root_, nil_, other.nil_);
     }
 
@@ -262,8 +270,8 @@ public:
             parent = current;
             current = (key < current->key) ? current->left : current->right;
         }
-
-        Nodes::Node<KeyT>* new_node = new Nodes::Node<KeyT>(key, parent, nil_, nil_, true);
+        
+        Nodes::Node<KeyT>* new_node = new Nodes::Node<KeyT>(key, parent, nil_, nil_, true); 
 
         if (parent == nil_) {
             root_ = new_node;
@@ -271,6 +279,11 @@ public:
             parent->left = new_node;
         } else {
             parent->right = new_node;
+        }
+
+        for (Nodes::Node<KeyT>* current = parent; current != nil_;) {
+            current->size++;
+            current = current->parent;
         }
 
         InsertFixup(new_node);
