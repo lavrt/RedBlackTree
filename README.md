@@ -28,18 +28,18 @@ The tree adheres to the following properties:
 
 - **Insertion**: Add nodes to the tree while maintaining Red-Black Tree properties.
 
-- **Range Query**: Support for lower_bound and upper_bound operations using iterators.
+- **Range Query**: Count keys within an inclusive range `[l, r]` using `LowerBound` / `UpperBound` and subtree-size augmentation.
 
 - **Iterators**: Provide begin() and end() iterators for tree traversal.
 
 - **Self-Balancing**: Maintains balance through left and right rotations and color adjustments.
 
-- **Visualization**: Dump the tree structure to a Graphviz file for debugging.
+- **Visualization** *(Debug only)*: Dump the tree structure to a Graphviz file for debugging.
 
 
 ## Requirements
 
-- C++11 or later
+- C++20
 
 - A C++ compiler (e.g., g++, clang)
 
@@ -60,9 +60,9 @@ cmake --build build
 
 ./build/tree            # running the main application
 
-cd build && ctest       # running unit tests
+ctest --test-dir build       # running unit tests
 
-cd RedBlackTree && python3 tests/e2e/run_e2e.py     # running e2e tests
+python3 tests/e2e/run_e2e.py     # running e2e tests
 ```
 
 ## Visualization
@@ -73,10 +73,26 @@ The Red-Black Tree supports visualization.
 <img src="docs/dump_example.png" style="width: 70%; height: auto;">
 </div>
 
-To convert the generated DOT files to PNG images:
-1. Install Graphviz (if not already installed)
-2. Run your program (the .gv files are generated automatically when you call ```tree.Dump("filename")```)
-3. Convert to PNG using the dot command:
+To convert the generated DOT (.gv) files to PNG images:
+1. Build in **Debug** so the `RBTREE_DEBUG` macro is enabled, and include the header conditionally:
+```cpp
+#ifdef RBTREE_DEBUG
+#include "rbtree_visualizer.hpp"
+#endif
+```
+Configure and build in Debug mode:
+```bash
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
+cmake --build build
+```
+
+2. Run your program. The `.gv` files are generated automatically when you call:
+
+```cpp
+Trees::RBTreeVisualizer<KeyT>::Dump(tree, "file_name");
+```
+
+3. Install Graphviz (if not already installed) and convert to PNG:
 ```bash
 dot filename.gv -Tpng -o filename.png
 ```

@@ -7,7 +7,7 @@
 namespace Trees {
 
 template <typename KeyT>
-class RBTreeVizualizer {
+class RBTreeVisualizer {
 public:
     static void Dump(const RBTree<KeyT>& t, const std::string& file_name) {
         std::ofstream file(file_name + ".gv");

@@ -7,7 +7,7 @@ class RBTree {
     class Node;
 
 #ifdef RBTREE_DEBUG
-    template <typename> friend class RBTreeVizualizer;
+    template <typename> friend class RBTreeVisualizer;
 #endif
 
 public:
