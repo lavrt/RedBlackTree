@@ -58,7 +58,7 @@ public:
             return current_->key;
         }
 
-        Iterator& operator++() { // TODO хранить дерево в векторе, чтобы удобнее оптимизировать
+        Iterator& operator++() {
             if (current_->right != nil_) {
                 current_ = current_->right;
                 while (current_->left != nil_) {
@@ -132,7 +132,7 @@ public:
         return true;
     }
 
-    RBTree<KeyT>::Iterator LowerBound(KeyT key) const {
+    Iterator LowerBound(KeyT key) const {
         Node* candidate = nil_;
 
         for (Node* current = root_; current != nil_;) {
@@ -147,7 +147,7 @@ public:
         return Iterator(candidate, nil_);
     }
 
-    RBTree<KeyT>::Iterator UpperBound(KeyT key) const {
+    Iterator UpperBound(KeyT key) const {
         Node* candidate = nil_;
 
         for (Node* current = root_; current != nil_;) {
@@ -162,8 +162,10 @@ public:
         return Iterator(candidate, nil_);
     }
 
-    size_t Distance(RBTree<KeyT>::Iterator first, RBTree<KeyT>::Iterator second) const {
-        return RankIter(second) - RankIter(first);
+    size_t Distance(Iterator first, Iterator second) const {
+        size_t a = RankIter(first);
+        size_t b = RankIter(second);
+        return (b > a) ? (b - a) : 0;
     }
 
     void Dump(const std::string& file_name) const {
@@ -297,7 +299,7 @@ private:
         return r;
     }
 
-    size_t RankIter(const RBTree<KeyT>::Iterator& it) const {
+    size_t RankIter(const Iterator& it) const {
         return (it == end()) ? root_->size : RankLess(*it);
     }
 
@@ -391,7 +393,7 @@ private:
         Node& operator=(const Node&) = delete;
         Node(Node&&) = default;
         Node& operator=(Node&&) = default;
-    };
+    }; // class Node
 };
 
 } // namespace Trees
