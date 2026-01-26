@@ -89,7 +89,7 @@ cmake --build build
 2. Run your program. The `.gv` files are generated automatically when you call:
 
 ```cpp
-Trees::RBTreeVisualizer<KeyT>::Dump(tree, "file_name");
+Trees::RBTreeVisualizer<KeyT>::Dump(tree, "filename");
 ```
 
 3. Install Graphviz (if not already installed) and convert to PNG:
