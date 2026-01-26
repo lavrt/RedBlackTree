@@ -22,5 +22,3 @@ int main() {
 
     return 0;
 }
-
-// TODO maybe google benchmark

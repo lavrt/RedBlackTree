@@ -14,5 +14,10 @@ target_include_directories(run_unit_tests
 
 target_link_libraries(run_unit_tests GTest::gtest GTest::gtest_main)
 
+target_compile_definitions(run_unit_tests
+    PRIVATE
+        $<$<CONFIG:Debug>:RBTREE_DEBUG=1>
+)
+
 include(GoogleTest)
 gtest_discover_tests(run_unit_tests)

@@ -1,12 +1,14 @@
 #pragma once
 
-#include <fstream>
-
 namespace Trees {
 
 template <typename KeyT>
 class RBTree {
     class Node;
+
+#ifdef RBTREE_DEBUG
+    template <typename> friend class RBTreeVizualizer;
+#endif
 
 public:
     RBTree() : nil_(new Node(0)) {
@@ -168,31 +170,6 @@ public:
         return (b > a) ? (b - a) : 0;
     }
 
-    void Dump(const std::string& file_name) const {
-        if (root_ == nullptr) {
-            throw std::runtime_error("Empty tree dump");
-        }
-
-        std::ofstream file(file_name + ".gv");
-        if (!file) {
-            throw std::runtime_error("Cannot open file: " + file_name + ".gv");
-        }
-
-        file << "digraph\n"
-            << "{\n    "
-            << "rankdir = TB;\n    "
-            << "node [shape=record,style = filled,penwidth = 2.5];\n    "
-            << "bgcolor = \"#F8F9FA\";\n\n";
-
-        DefiningGraphNodes(file, root_);
-        file << "\n";
-        DefiningGraphDependencies(file, root_);
-
-        file << "}\n";
-
-        file.close();
-    }
-
 private:
     Node* nil_;
     Node* root_;
@@ -321,57 +298,6 @@ private:
         return node;
     }
 
-    void DefiningGraphNodes(std::ofstream& file, Node* node) const {
-        static size_t rank = 0;
-        file << "    node_" << node
-             << " [rank=" << rank
-             << ",label=\" { parent: " << node->parent
-             << " | node: " << node
-             << " | key: " << node->key
-             << "; size: " << node->size
-             << "; rank: " << RankLess(node->key)
-             << " | { left: " << node->left
-             << " | right: " << node->right
-             << " }} \", "
-             << (node->is_red
-                    ? "fontcolor=\"#000000\", fillcolor=\"#FF6B6B\", color = \"#C53030\"];\n"
-                    : "fontcolor=\"#FFFFFF\", fillcolor=\"#2D3748\", color = \"#1A202C\"];\n");
-
-        if (node->left != nil_) {
-            rank++;
-            DefiningGraphNodes(file, node->left);
-        }
-        if (node->right != nil_) {
-            rank++;
-            DefiningGraphNodes(file, node->right);
-        }
-        rank--;
-    }
-
-    void DefiningGraphDependencies(std::ofstream& file, Node* node) const {
-        static int flag = 0;
-        if (node->left != nil_) {
-            if (flag++) {
-                file << "-> node_" << node->left << " ";
-            } else {
-                file << "    node_" << node << " -> node_" << node->left << " ";
-            }
-            DefiningGraphDependencies(file, node->left);
-        }
-        if (node->right != nil_) {
-            if (flag++) {
-                file << "-> node_" << node->right << " ";
-            } else {
-                file << "    node_" << node << " -> node_" << node->right << " ";
-            }
-            DefiningGraphDependencies(file, node->right);
-        }
-        if (flag) {
-            file << ";\n";
-        }
-        flag = 0;
-    }
-
     class Node {
     public:
         KeyT key;
@@ -394,6 +320,6 @@ private:
         Node(Node&&) = default;
         Node& operator=(Node&&) = default;
     }; // class Node
-};
+}; // class RBTree
 
 } // namespace Trees
