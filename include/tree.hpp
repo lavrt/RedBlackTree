@@ -292,8 +292,7 @@ private:
         return (it == end()) ? root_->size : RankLess(*it);
     }
 
-    Node* CopySubtree(Node* other_node, Node* parent, Node* other_nil_node) const
-    {
+    Node* CopySubtree(Node* other_node, Node* parent, Node* other_nil_node) const {
         if (other_node == other_nil_node) {
             return nil_;
         }
