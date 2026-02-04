@@ -18,7 +18,27 @@ public:
     }
 
     ~RBTree() {
-        DeleteTree(root_);
+        for (Node* current = root_; current != nil_;) {
+            if (current->left != nil_) {
+                current = current->left;
+            } else if (current->right != nil_) {
+                current = current->right;
+            } else {
+                Node* parent = current->parent;
+                
+                if (parent != nil_) {
+                    if (current == parent->left) {
+                        parent->left = nil_;
+                    } else {
+                        parent->right = nil_;
+                    }
+                }
+                
+                delete current;
+                current = parent;
+            }
+        }
+
         delete nil_;
     }
 
@@ -174,14 +194,6 @@ private:
     Node* nil_;
     Node* root_;
 
-    void DeleteTree(Node* node) {
-        if (node != nil_) {
-            DeleteTree(node->left);
-            DeleteTree(node->right);
-            delete node;
-        }
-    }
-
     void LeftRotate(Node* x) {
         Node* y = x->right;
         x->right = y->left;
@@ -280,8 +292,7 @@ private:
         return (it == end()) ? root_->size : RankLess(*it);
     }
 
-    Node* CopySubtree(Node* other_node, Node* parent,
-        Node* other_nil_node) const
+    Node* CopySubtree(Node* other_node, Node* parent, Node* other_nil_node) const
     {
         if (other_node == other_nil_node) {
             return nil_;
