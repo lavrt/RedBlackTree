@@ -46,7 +46,7 @@ public:
         nil_->is_red = false;
         nil_->size = 0;
         nil_->parent = nil_->left = nil_->right = nil_;
-        root_ = CopySubtree(other.root_, nil_, other.nil_);
+        root_ = CopySubtree(other.root_, other.nil_);
     }
 
     RBTree& operator=(const RBTree<KeyT>& other) {
@@ -134,7 +134,10 @@ public:
             current = (key < current->key) ? current->left : current->right;
         }
         
-        Node* new_node = new Node(key, parent, nil_, nil_, true); 
+        Node* new_node = new Node(key);
+        new_node->parent = parent;
+        new_node->left = new_node->right = nil_;
+        new_node->is_red = true;
 
         if (parent == nil_) {
             root_ = new_node;
@@ -292,20 +295,57 @@ private:
         return (it == end()) ? root_->size : RankLess(*it);
     }
 
-    Node* CopySubtree(Node* other_node, Node* parent, Node* other_nil_node) const {
-        if (other_node == other_nil_node) {
+    Node* CopySubtree(Node* other_root, Node* other_nil) const {
+        if (other_root == other_nil) {
             return nil_;
         }
 
-        Node* node = new Node(other_node->key);
-        node->parent = parent;
-        node->is_red = other_node->is_red;
-        node->size = other_node->size;
-        
-        node->left = CopySubtree(other_node->left, node, other_nil_node);
-        node->right = CopySubtree(other_node->right, node, other_nil_node);
+        Node* new_root = new Node(other_root->key);
+        new_root->parent = new_root->left = new_root->right = nil_;
+        new_root->is_red = other_root->is_red;
+        new_root->size = other_root->size;
 
-        return node;
+        Node* old_current = other_root;
+        Node* new_current = new_root;
+
+        while (true) {
+            if (old_current->left != other_nil && new_current->left == nil_) {
+                Node* l = new Node(old_current->left->key);
+                l->parent = new_current;
+                l->is_red = old_current->left->is_red;
+                l->size = old_current->left->size;
+                l->left = l->right = nil_;
+                new_current->left = l;
+
+                old_current = old_current->left;
+                new_current = l;
+
+                continue;
+            }
+
+            if (old_current->right != other_nil && new_current->right == nil_) {
+                Node* r = new Node(old_current->right->key);
+                r->parent = new_current;
+                r->is_red = old_current->right->is_red;
+                r->size = old_current->right->size;
+                r->left = r->right = nil_;
+                new_current->right = r;
+
+                old_current = old_current->right;
+                new_current = r;
+
+                continue;
+            }
+
+            if (old_current == other_root) {
+                break;
+            }
+
+            old_current = old_current->parent;
+            new_current = new_current->parent;
+        }
+
+        return new_root;
     }
 
     class Node {
@@ -319,16 +359,13 @@ private:
         bool is_red;
         size_t size;
 
-        Node(KeyT key) : key(key), parent(nullptr), left(nullptr), right(nullptr), is_red(false), size(1) {}
-        
-        Node(KeyT key, Node* parent, Node* left, Node* right, bool is_red)
-            : key(key), parent(parent), left(left), right(right), is_red(is_red), size(left->size + right->size + 1) {}
+        Node(const KeyT& key) : key(key), parent(nullptr), left(nullptr), right(nullptr), is_red(false), size(1) {}
 
         ~Node() = default;
         Node(const Node&) = delete;
         Node& operator=(const Node&) = delete;
-        Node(Node&&) = default;
-        Node& operator=(Node&&) = default;
+        Node(Node&&) = delete;
+        Node& operator=(Node&&) = delete;
     }; // class Node
 }; // class RBTree
 
