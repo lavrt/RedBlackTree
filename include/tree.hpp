@@ -1,69 +1,39 @@
 #pragma once
 
+#include <vector>
+#include <memory>
+
 namespace Trees {
 
 template <typename KeyT>
 class RBTree {
     class Node;
+    class NodePool;
 
 #ifdef RBTREE_DEBUG
     template <typename> friend class RBTreeVisualizer;
 #endif
 
 public:
-    RBTree() : nil_(new Node(0)) {
-        nil_->is_red = false;
-        nil_->size = 0;
-        root_ = nil_->parent = nil_->left = nil_->right = nil_;
-    }
+    RBTree() : nil_(CreateNil()), root_(nil_) {}
 
-    ~RBTree() {
-        for (Node* current = root_; current != nil_;) {
-            if (current->left != nil_) {
-                current = current->left;
-            } else if (current->right != nil_) {
-                current = current->right;
-            } else {
-                Node* parent = current->parent;
-                
-                if (parent != nil_) {
-                    if (current == parent->left) {
-                        parent->left = nil_;
-                    } else {
-                        parent->right = nil_;
-                    }
-                }
-                
-                delete current;
-                current = parent;
-            }
-        }
-
-        delete nil_;
-    }
-
-    RBTree(const RBTree<KeyT>& other) : nil_(new Node(0)) {
-        nil_->is_red = false;
-        nil_->size = 0;
-        nil_->parent = nil_->left = nil_->right = nil_;
+    RBTree(const RBTree<KeyT>& other) : nil_(CreateNil()) {
+        pool_.Reserve(other.root_->size + 1);
         root_ = CopySubtree(other.root_, other.nil_);
     }
 
     RBTree& operator=(const RBTree<KeyT>& other) {
         RBTree<KeyT> temp(other);
-        std::swap(root_, temp.root_);
-        std::swap(nil_, temp.nil_);
+        Swap(temp);
         return *this;
     }
 
-    RBTree(RBTree&& other) noexcept : nil_(nullptr), root_(nullptr) {
-        std::swap(nil_, other.nil_);
-        std::swap(root_, other.root_);
+    RBTree(RBTree&& other) noexcept : RBTree() {
+        Swap(other);
     }
 
     RBTree& operator=(RBTree<KeyT>&& other) noexcept {
-        std::swap(nil_, other.nil_);
-        std::swap(root_, other.root_);
+        Swap(other);
         return *this;
     }
 
@@ -134,7 +104,7 @@ public:
             current = (key < current->key) ? current->left : current->right;
         }
         
-        Node* new_node = new Node(key);
+        Node* new_node = pool_.Create(key);
         new_node->parent = parent;
         new_node->left = new_node->right = nil_;
         new_node->is_red = true;
@@ -194,6 +164,7 @@ public:
     }
 
 private:
+    NodePool pool_;
     Node* nil_;
     Node* root_;
 
@@ -295,12 +266,12 @@ private:
         return (it == end()) ? root_->size : RankLess(*it);
     }
 
-    Node* CopySubtree(Node* other_root, Node* other_nil) const {
+    Node* CopySubtree(Node* other_root, Node* other_nil) {
         if (other_root == other_nil) {
             return nil_;
         }
 
-        Node* new_root = new Node(other_root->key);
+        Node* new_root = pool_.Create(other_root->key); 
         new_root->parent = new_root->left = new_root->right = nil_;
         new_root->is_red = other_root->is_red;
         new_root->size = other_root->size;
@@ -310,7 +281,7 @@ private:
 
         while (true) {
             if (old_current->left != other_nil && new_current->left == nil_) {
-                Node* l = new Node(old_current->left->key);
+                Node* l = pool_.Create(old_current->left->key);
                 l->parent = new_current;
                 l->is_red = old_current->left->is_red;
                 l->size = old_current->left->size;
@@ -324,7 +295,7 @@ private:
             }
 
             if (old_current->right != other_nil && new_current->right == nil_) {
-                Node* r = new Node(old_current->right->key);
+                Node* r = pool_.Create(old_current->right->key);
                 r->parent = new_current;
                 r->is_red = old_current->right->is_red;
                 r->size = old_current->right->size;
@@ -348,6 +319,21 @@ private:
         return new_root;
     }
 
+    Node* CreateNil() {
+        Node* nil = pool_.Create(KeyT{});
+        nil->is_red = false;
+        nil->size = 0;
+        nil->parent = nil->left = nil->right = nil;
+
+        return nil;
+    }
+
+    void Swap(RBTree& other) noexcept {
+        std::swap(pool_, other.pool_);
+        std::swap(root_, other.root_);
+        std::swap(nil_, other.nil_);
+    }
+
     class Node {
     public:
         KeyT key;
@@ -367,6 +353,22 @@ private:
         Node(Node&&) = delete;
         Node& operator=(Node&&) = delete;
     }; // class Node
+
+    class NodePool {
+    private:
+        std::vector<std::unique_ptr<Node>> data_;
+
+    public:
+        template <class... Args>
+        Node* Create(Args&&... args) {
+            data_.push_back(std::make_unique<Node>(std::forward<Args>(args)...));
+            return data_.back().get();
+        }
+
+        void Reserve(size_t n) {
+            data_.reserve(n);
+        }
+    }; // class NodePool
 }; // class RBTree
 
 } // namespace Trees
